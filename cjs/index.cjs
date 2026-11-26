@@ -1,4 +1,5 @@
-const { HtmlCleanError, normalizePolicy, sanitizeWithPolicy, DROP_CONTENT_ELEMENTS } = require('./sanitize.cjs');
+const { normalizePolicy, sanitizeWithPolicy, DROP_CONTENT_ELEMENTS } = require('./sanitize.cjs');
+const { HtmlCleanError } = require('./errors.cjs');
 const { decodeReferences, escapeCanonical } = require('./entities.cjs');
 
 const STRICT_POLICY = Object.freeze({

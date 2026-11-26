@@ -1,14 +1,6 @@
 import { decodeReferences, escapeCanonical } from './entities.mjs';
 import { tokenize } from './tokenizer.mjs';
-
-/** Typed error for policy violations and resource limits. */
-export class HtmlCleanError extends Error {
-  constructor(message, code = 'INVALID_INPUT') {
-    super(message);
-    this.name = 'HtmlCleanError';
-    this.code = code;
-  }
-}
+import { HtmlCleanError } from './errors.mjs';
 
 const VOID_ELEMENTS = new Set([
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
@@ -228,7 +220,12 @@ export function sanitizeWithPolicy(input, policy) {
   if (typeof input !== 'string') {
     throw new HtmlCleanError('HTML input must be a string', 'INVALID_INPUT');
   }
-  const bytes = Buffer.byteLength ? Buffer.byteLength(input, 'utf8') : new TextEncoder().encode(input).length;
+  // Edge runtimes such as Cloudflare Workers and Deno have no global Buffer.
+  // The identifier must be probed with typeof, or accessing Buffer.byteLength
+  // throws before the TextEncoder fallback can run.
+  const bytes = typeof Buffer !== 'undefined' && typeof Buffer.byteLength === 'function'
+    ? Buffer.byteLength(input, 'utf8')
+    : new TextEncoder().encode(input).length;
   if (bytes > policy.maxInputBytes) {
     throw new HtmlCleanError(`Input exceeds maxInputBytes (${policy.maxInputBytes})`, 'INPUT_TOO_LARGE');
   }
@@ -337,7 +334,11 @@ export function sanitizeWithPolicy(input, policy) {
     fragment += '>';
     out += fragment;
 
-    if (!token.selfClosing && !VOID_ELEMENTS.has(name)) {
+    // HTML has no self-closing syntax for non-void elements: every browser
+    // treats <div/> as an opening div, so the emitted start tag must be
+    // tracked and closed. Otherwise the output is unbalanced and re-parses
+    // differently, breaking the idempotency guarantee.
+    if (!VOID_ELEMENTS.has(name)) {
       if (depth >= policy.maxDepth) {
         throw new HtmlCleanError(`Input exceeds maxDepth (${policy.maxDepth})`, 'MAX_DEPTH_EXCEEDED');
       }

@@ -1,13 +1,19 @@
 /** Error thrown for invalid input, invalid policies, and resource-limit breaches. */
 export declare class HtmlCleanError extends Error {
   readonly name: 'HtmlCleanError';
-  readonly code: 'INVALID_INPUT' | 'INVALID_POLICY' | 'INPUT_TOO_LARGE' | 'MAX_DEPTH_EXCEEDED';
+  readonly code:
+    | 'INVALID_INPUT'
+    | 'INVALID_POLICY'
+    | 'INPUT_TOO_LARGE'
+    | 'MAX_DEPTH_EXCEEDED'
+    | 'TOKEN_LIMIT_EXCEEDED';
   constructor(message: string, code?: string);
 }
 
 /** A sanitizer bound to a fixed policy. */
 export interface BoundSanitizer {
   sanitize(input: string): string;
+  /** Plain text with character references decoded once; not HTML-escaped. */
   strip(input: string): string;
 }
 
@@ -43,7 +49,11 @@ export interface SanitizePolicy {
 
 /** Sanitize an HTML string into canonical, idempotent, escaped HTML. */
 export declare function sanitizeHtml(input: string, options?: SanitizePolicy): string;
-/** Remove all markup and dangerous subtrees; return escaped text content. */
+/**
+ * Remove all markup and dangerous subtrees; return plain text with character
+ * references decoded once. The result is not HTML-escaped, so escape it
+ * before inserting it into an HTML document.
+ */
 export declare function stripHtml(input: string, options?: SanitizePolicy): string;
 /** Create a reusable sanitizer bound to a fixed policy. */
 export declare function createSanitizer(policy?: SanitizePolicy): BoundSanitizer;

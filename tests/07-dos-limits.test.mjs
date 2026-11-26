@@ -24,9 +24,10 @@ test('maxDepth rejects excessive nesting', () => {
   assert.equal(s.sanitize(ok), ok);
 });
 
-test('maxTokens rejects token floods', () => {
+test('maxTokens rejects token floods with a typed error', () => {
   const s = createSanitizer({ maxTokens: 10 });
-  assert.throws(() => s.sanitize('<br>'.repeat(20)), /HTMCLEAN_TOKEN_LIMIT/);
+  assert.throws(() => s.sanitize('<br>'.repeat(20)), (err) =>
+    err instanceof HtmlCleanError && err.code === 'TOKEN_LIMIT_EXCEEDED');
 });
 
 test('malformed unterminated attribute cannot hang the tokenizer', () => {

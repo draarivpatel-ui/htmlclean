@@ -10,7 +10,7 @@ const srcDir = join(root, 'src');
 const cjsDir = join(root, 'cjs');
 mkdirSync(cjsDir, { recursive: true });
 
-const MODULES = ['entities', 'tokenizer', 'sanitize', 'index'];
+const MODULES = ['errors', 'entities', 'tokenizer', 'sanitize', 'index'];
 
 function transform(source) {
   const exportAssignments = [];

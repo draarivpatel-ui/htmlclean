@@ -2,6 +2,8 @@
 // expressions to strip markup: it emits tokens from a character stream and
 // hands them to the sanitizer, which decides what may be serialized.
 
+import { HtmlCleanError } from './errors.mjs';
+
 export const RAW_TEXT_ELEMENTS = new Set([
   'script', 'style', 'textarea', 'title', 'xmp', 'iframe', 'noembed',
   'noframes', 'noscript', 'plaintext',
@@ -24,6 +26,32 @@ function isNameChar(ch) {
   return ch !== undefined && /[A-Za-z0-9:_\-.]/.test(ch);
 }
 
+function asciiLower(code) {
+  return code >= 0x41 && code <= 0x5a ? code + 0x20 : code;
+}
+
+/*
+ * Case-insensitive ASCII search that never allocates a lowercase copy of the
+ * input. Lowercasing the whole string once per raw-text region made scanning
+ * quadratic: N script/style regions over an n-byte document cost O(n * N).
+ */
+function indexOfEndTag(input, needle, from) {
+  const n = input.length;
+  const m = needle.length;
+  if (m === 0) return from;
+  const last = n - m;
+  for (let start = from; start <= last; start += 1) {
+    if (asciiLower(input.charCodeAt(start)) !== needle.charCodeAt(0)) continue;
+    let offset = 1;
+    while (offset < m &&
+           asciiLower(input.charCodeAt(start + offset)) === needle.charCodeAt(offset)) {
+      offset += 1;
+    }
+    if (offset === m) return start;
+  }
+  return -1;
+}
+
 /**
  * Tokenize HTML into a flat token array. Each token is one of:
  *   { type: 'text', value }
@@ -44,7 +72,9 @@ export function tokenize(input, maxTokens = 100000) {
   function push(token) {
     tokens.push(token);
     if (tokens.length > maxTokens) {
-      throw new Error('HTMCLEAN_TOKEN_LIMIT');
+      throw new HtmlCleanError(
+        `Input exceeds maxTokens (${maxTokens})`, 'TOKEN_LIMIT_EXCEEDED'
+      );
     }
   }
 
@@ -145,7 +175,7 @@ export function tokenize(input, maxTokens = 100000) {
       // Raw text ends only at the matching end tag; nested "<tag>" sequences
       // are data. This is how a browser parses script/style/textarea bodies.
       const endTag = `</${rawTextTag}`;
-      const found = input.toLowerCase().indexOf(endTag, i);
+      const found = indexOfEndTag(input, endTag, i);
       if (found === -1) {
         push({ type: 'text', value: input.slice(i) });
         i = n;
@@ -232,8 +262,8 @@ export function tokenize(input, maxTokens = 100000) {
         push({ type: 'text', value: input.slice(i) });
         break;
       }
+      push({ type: 'comment', value: input.slice(i + 2, close) });
       i = close + 1;
-      push({ type: 'comment', value: input.slice(2, close - i + close) });
       continue;
     }
     if (isNameStart(input[i + 1])) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeHtml } from '../src/index.mjs';
+import { sanitizeHtml, HtmlCleanError } from '../src/index.mjs';
 import { tokenize } from '../src/tokenizer.mjs';
 
 test('tokenizer emits text, start, end and comment tokens', () => {
@@ -37,7 +37,8 @@ test('tokenizer treats raw-text content as opaque until closing tag', () => {
 });
 
 test('tokenizer enforces a token limit', () => {
-  assert.throws(() => tokenize('<p>x</p>'.repeat(20), 5), /HTMCLEAN_TOKEN_LIMIT/);
+  assert.throws(() => tokenize('<p>x</p>'.repeat(20), 5), (err) =>
+    err instanceof HtmlCleanError && err.code === 'TOKEN_LIMIT_EXCEEDED');
 });
 
 test('processing instructions are ignored', () => {

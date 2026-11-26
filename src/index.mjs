@@ -1,9 +1,9 @@
 import {
-  HtmlCleanError,
   normalizePolicy,
   sanitizeWithPolicy,
   DROP_CONTENT_ELEMENTS,
 } from './sanitize.mjs';
+import { HtmlCleanError } from './errors.mjs';
 import { decodeReferences, escapeCanonical } from './entities.mjs';
 
 export const STRICT_POLICY = Object.freeze({

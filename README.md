@@ -47,7 +47,7 @@ Sanitizes an HTML string and returns canonical, idempotent HTML. Sanitizing the 
 
 ### `stripHtml(input: string, options?: SanitizePolicy): string`
 
-Removes all markup and dangerous subtrees and returns the plain text content. Character references are decoded once.
+Removes all markup and dangerous subtrees and returns the plain text content. Character references are decoded once, so the result is plain text and not HTML-escaped: escape it before inserting it into an HTML document.
 
 ### `createSanitizer(policy?: SanitizePolicy): BoundSanitizer`
 
@@ -60,7 +60,7 @@ Returns a frozen object with `sanitize(input)` and `strip(input)` methods bound 
 
 ### `HtmlCleanError`
 
-Thrown for non-string input, invalid policies, oversized input (`INPUT_TOO_LARGE`) and excessive nesting (`MAX_DEPTH_EXCEEDED`).
+Thrown for non-string input (`INVALID_INPUT`), invalid policies (`INVALID_POLICY`), oversized input (`INPUT_TOO_LARGE`), excessive nesting (`MAX_DEPTH_EXCEEDED`) and token floods (`TOKEN_LIMIT_EXCEEDED`).
 
 ## Policy options
 
@@ -88,8 +88,8 @@ All `on*` event handlers, `srcdoc`, `formaction`, `xlink:href` and `style` (unle
 - Script, event-handler and javascript: URL injection, including mixed case, entity encoding, embedded controls and malformed tags.
 - SVG and MathML foreign-namespace mutation XSS (mXSS), including `<noscript>`, `<template>`, `<style>` and comment breakout vectors.
 - DOM clobbering through `id` and `name`.
-- Canonicalization escapes: output is fully re-escaped, so sanitized text cannot be re-parsed as markup on a second pass.
-- Linear resource abuse through input-size, depth and token-count limits.
+- Canonicalization escapes: output is fully re-escaped and every non-void start tag is balanced, so sanitized text cannot be re-parsed as different markup on a second pass.
+- Linear resource abuse through input-size, depth and token-count limits. Raw-text scanning is a single linear pass with no whole-input lowercase copies.
 
 It does not protect against:
 
@@ -106,7 +106,7 @@ Text nodes serialize with `<`, `>`, `&`, `"` and `'` escaped. Attribute values a
 
 ```sh
 npm run build   # regenerate cjs/ from src/
-npm test        # Node test runner, 181 assertions
+npm test        # Node test runner, 190 tests
 ```
 
 Runtime dependencies: none. Dev dependencies: none. CI runs on Node 20, 22 and 24 across Linux, macOS and Windows.
