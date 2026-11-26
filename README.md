@@ -1,4 +1,4 @@
-# htmlclean
+# @aarivbuildz/htmlclean
 
 Zero-dependency, allowlist-based HTML sanitizer for Node.js, Cloudflare Workers, Deno, Bun and edge runtimes. No `jsdom`, no native bindings, no network calls.
 
@@ -7,7 +7,7 @@ Zero-dependency, allowlist-based HTML sanitizer for Node.js, Cloudflare Workers,
 ## Install
 
 ```sh
-npm install htmlclean
+npm install @aarivbuildz/htmlclean
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install htmlclean
 ESM:
 
 ```js
-import { sanitizeHtml, stripHtml, createSanitizer } from 'htmlclean';
+import { sanitizeHtml, stripHtml, createSanitizer } from '@aarivbuildz/htmlclean';
 
 sanitizeHtml('<p>Hello <b>world</b></p><script>alert(1)</script>');
 // '<p>Hello <b>world</b></p>'
@@ -34,7 +34,7 @@ clean.sanitize('<a href="https://example.com" onclick="x()">Link</a>');
 CommonJS:
 
 ```js
-const { sanitizeHtml } = require('htmlclean');
+const { sanitizeHtml } = require('@aarivbuildz/htmlclean');
 ```
 
 The package ships ESM in `src/`, CJS in `cjs/`, and strict TypeScript declarations in `types/`. Both module formats are tested for exact output parity.
@@ -109,7 +109,7 @@ npm run build   # regenerate cjs/ from src/
 npm test        # Node test runner, 190 tests
 ```
 
-Runtime dependencies: none. Dev dependencies: none. CI runs on Node 20, 22 and 24 across Linux, macOS and Windows.
+Runtime dependencies: none. Dev dependencies: none. CI runs on Node 18, 20, 22 and 24 across Linux and Windows.
 
 ## License
 

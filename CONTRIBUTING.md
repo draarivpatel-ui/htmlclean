@@ -35,4 +35,4 @@ Use short imperative commit messages. Example: `Reject javascript URL after name
 
 ## Pull requests
 
-Describe the threat addressed, the tests added, and any change to the public policy surface. CI runs on Linux, macOS and Windows with Node 20, 22 and 24.
+Describe the threat addressed, the tests added, and any change to the public policy surface. CI runs on Linux and Windows with Node 18, 20, 22 and 24.
