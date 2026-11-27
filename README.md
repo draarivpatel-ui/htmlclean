@@ -1,5 +1,7 @@
 # @aarivbuildz/htmlclean
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/draarivpatel-ui/htmlclean/badge)](https://scorecard.dev/viewer/?uri=github.com/draarivpatel-ui/htmlclean)
+
 Zero-dependency, allowlist-based HTML sanitizer for Node.js, Cloudflare Workers, Deno, Bun and edge runtimes. No `jsdom`, no native bindings, no network calls.
 
 `htmlclean` uses a real character-stream tokenizer and a canonical tree serializer. It never strips tags with regular expressions. Dangerous elements and their content are discarded before serialization, every emitted text and attribute value is escaped, and URLs are decoded then checked against a scheme allowlist.
