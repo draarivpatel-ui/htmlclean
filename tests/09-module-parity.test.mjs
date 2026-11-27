@@ -62,7 +62,7 @@ test('package exports resolve both entry points', () => {
   assert.equal(pkg.module, './src/index.mjs');
   assert.equal(pkg.types, './types/index.d.ts');
   assert.deepEqual(pkg.dependencies, {});
-  assert.deepEqual(pkg.devDependencies, {});
+  assert.deepEqual(pkg.devDependencies, { 'fast-check': '4.10.3' });
 });
 
 test('all CJS modules load without error', () => {

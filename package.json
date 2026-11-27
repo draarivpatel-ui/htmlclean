@@ -30,10 +30,13 @@
   "scripts": {
     "build": "node scripts/build-cjs.mjs",
     "test": "node scripts/run-tests.mjs tests/*.test.mjs",
-    "test:all": "node scripts/build-cjs.mjs && node scripts/run-tests.mjs tests/*.test.mjs"
+    "test:all": "node scripts/build-cjs.mjs && node scripts/run-tests.mjs tests/*.test.mjs",
+    "test:fuzz": "node --test test/fuzz.test.js"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "fast-check": "4.10.3"
+  },
   "keywords": [
     "html",
     "sanitizer",
