@@ -92,3 +92,34 @@ test('empty href, fragment-only href and title attributes are preserved', () => 
   assert.equal(sanitizeHtml('<a href="https://x" title="link title">x</a>'),
     '<a href="https://x" title="link title">x</a>');
 });
+
+test('protocol-relative opt-in still rejects backslash smuggling', () => {
+  const s = createSanitizer({
+    allowedTags: ['a', 'p', 'img'],
+    allowedAttributes: { a: ['href', 'title'], img: ['src'] },
+    allowProtocolRelative: true
+  });
+  const vectors = [
+    '//\\evil.example/path',
+    '//evil.example\\path',
+    '//\\evil.example\\path',
+    '//&#x5c;evil.example/path'
+  ];
+  for (const url of vectors) {
+    assert.equal(s.sanitize(`<p><a href="${url}">x</a></p>`), '<p><a>x</a></p>', url);
+  }
+  assert.equal(s.sanitize('<p><a href="//good.example/path">x</a></p>'), '<p><a href="https://good.example/path">x</a></p>');
+});
+
+test('round2 regression: protocol-relative rewrite respects the scheme allowlist and stays idempotent', () => {
+  const s = createSanitizer({ allowProtocolRelative: true, allowedSchemes: ['http'] });
+  const input = '<a href="//good.example/path">x</a>';
+  const once = s.sanitize(input);
+  assert.equal(once, '<a>x</a>');
+  assert.equal(s.sanitize(once), once);
+
+  const httpsOnly = createSanitizer({ allowProtocolRelative: true, allowedSchemes: ['https:'] });
+  const rewritten = httpsOnly.sanitize(input);
+  assert.equal(rewritten, '<a href="https://good.example/path">x</a>');
+  assert.equal(httpsOnly.sanitize(rewritten), rewritten);
+});

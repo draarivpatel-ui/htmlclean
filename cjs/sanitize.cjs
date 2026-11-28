@@ -149,8 +149,13 @@ function isClobbering(name, policy) {
 function sanitizeUrl(raw, policy) {
   const url = canonicalizeUrl(raw);
   if (url === '' || url === '#') return url;
+  // Windows drive-letter forms and backslash smuggling are rejected before
+  // every scheme or protocol-relative branch. canonicalizeUrl has already
+  // removed C0 controls, so the control test is a defense-in-depth invariant.
+  if (/^[A-Za-z]:/.test(url) || url.includes('\\') || /[\u0000-\u001f]/.test(url)) return null;
   if (url.startsWith('//')) {
-    return policy.allowProtocolRelative ? `https:${url}` : null;
+    if (!policy.allowProtocolRelative || !policy.allowedSchemes.has('https:')) return null;
+    return `https:${url}`;
   }
   // Reject any string with a colon before the first slash, question or hash.
   const firstDelimiter = url.search(/[/?#]/);
@@ -160,9 +165,6 @@ function sanitizeUrl(raw, policy) {
     if (!policy.allowedSchemes.has(scheme)) return null;
     return url;
   }
-  // Windows drive-letter forms and backslash smuggling.
-  if (/^[A-Za-z]:/.test(url) || url.includes('\\')) return null;
-  if (/[\u0000-\u001f]/.test(url)) return null;
   if (policy.allowRelativeUrls) return url;
   return null;
 }
